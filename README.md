@@ -104,11 +104,3 @@ frontend/src/   React app (one component per page)
 - There is no login. Run it on a trusted network or put it behind your own authentication proxy; the `X-Actor` audit
   name is self-reported and not an identity.
 - Generated tests and scripts are drafts. Review them before running on any bench.
-
-## Screenshots
-
-Add your own captures to `docs/screenshots/` and link them here (for example `docs/screenshots/request-builder.png`).
-
-## License
-
-MIT, see `LICENSE`.
