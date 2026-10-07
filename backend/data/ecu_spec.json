@@ -1,0 +1,40 @@
+{
+  "_notice": "Synthetic specification for demonstration. It is NOT ISO 14229 or OEM text.",
+  "sessions": {"01": "Default", "03": "Extended"},
+  "security": {"seed": "1234", "xor": "A5"},
+  "nrcs": {
+    "11": "Service not supported",
+    "12": "Sub-function not supported",
+    "13": "Incorrect message length",
+    "24": "Request sequence error",
+    "31": "Request out of range",
+    "33": "Security access denied",
+    "35": "Invalid key",
+    "7F": "Service not supported in active session"
+  },
+  "services": {
+    "10": {"name": "DiagnosticSessionControl", "subfunctions": ["01", "03"], "length": [2, 2], "sessions": ["01", "03"]},
+    "11": {"name": "ECUReset", "subfunctions": ["01"], "length": [2, 2], "sessions": ["01", "03"]},
+    "22": {"name": "ReadDataByIdentifier", "length": [3, 3], "sessions": ["01", "03"]},
+    "27": {"name": "SecurityAccess", "subfunctions": ["01", "02"], "length": [2, 4], "length_by_subfunction": {"01": [2, 2], "02": [4, 4]}, "sessions": ["03"]},
+    "2E": {"name": "WriteDataByIdentifier", "length": [5, 5], "sessions": ["03"], "security": true},
+    "31": {"name": "RoutineControl", "subfunctions": ["01"], "length": [4, 4], "sessions": ["03"], "security": true},
+    "3E": {"name": "TesterPresent", "subfunctions": ["00"], "length": [2, 2], "sessions": ["01", "03"]}
+  },
+  "dids": {
+    "F190": {"name": "VIN", "length": 17, "default": "53594E54483056494E3030303030303031"},
+    "F186": {"name": "ActiveDiagnosticSession", "length": 1, "dynamic": "session"},
+    "0100": {"name": "CalibrationValue", "length": 2, "default": "0064", "writable": true}
+  },
+  "routines": {"0203": {"name": "SensorSelfTest"}},
+  "sections": [
+    {"id": "§1", "title": "Diagnostic sessions", "text": "The ECU has a Default session (01) and an Extended session (03). Service 10 switches session; 10 03 returns 50 03 00 32 01 F4. Any session change locks security access again."},
+    {"id": "§2", "title": "SecurityAccess (27)", "text": "Extended session only. 27 01 requests a seed and returns 67 01 12 34. 27 02 followed by the key unlocks the ECU and returns 67 02. The key is each seed byte XOR A5, so the key is B7 91. A wrong key gives NRC 35. Sending a key without a seed request gives NRC 24."},
+    {"id": "§3", "title": "ReadDataByIdentifier (22)", "text": "Available in all sessions. DID F190 holds the 17-byte ASCII VIN, F186 holds the active session byte, and 0100 holds a 2-byte calibration value. An unknown DID gives NRC 31."},
+    {"id": "§4", "title": "WriteDataByIdentifier (2E)", "text": "Only DID 0100 is writable, with exactly 2 data bytes. Requires Extended session and an unlocked ECU. Locked gives NRC 33. Default session gives NRC 7F. Positive response is 6E 01 00."},
+    {"id": "§5", "title": "RoutineControl (31)", "text": "31 01 02 03 starts routine 0203, the sensor self-test. Requires Extended session and an unlocked ECU. Positive response is 71 01 02 03 00. An unknown routine ID gives NRC 31."},
+    {"id": "§6", "title": "ECUReset (11) and TesterPresent (3E)", "text": "Both work in any session. 11 01 is a hard reset, returns 51 01 and returns the ECU to the Default session. 3E 00 returns 7E 00."},
+    {"id": "§7", "title": "Request check order", "text": "Every request is checked in this order: service supported, sub-function supported, message length, active session, security state, then execution. The first failed check decides the NRC."},
+    {"id": "§8", "title": "Negative response codes", "text": "11 service not supported, 12 sub-function not supported, 13 incorrect length, 24 request sequence error, 31 request out of range, 33 security access denied, 35 invalid key, 7F service not supported in active session. A negative response has the form 7F, request SID, NRC."}
+  ]
+}

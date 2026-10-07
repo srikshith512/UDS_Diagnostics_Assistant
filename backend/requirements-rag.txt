@@ -1,0 +1,3 @@
+# Optional: vector retrieval. Without these the app falls back to lexical retrieval.
+chromadb>=0.5,<2
+sentence-transformers>=3,<6

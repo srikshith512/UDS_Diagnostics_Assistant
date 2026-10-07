@@ -1,0 +1,30 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    volumes: [ollama:/root/.ollama]
+    restart: unless-stopped
+    # GPU (optional): uncomment and install the NVIDIA container toolkit
+    # deploy: { resources: { reservations: { devices: [{ driver: nvidia, count: all, capabilities: [gpu] }] } } }
+
+  backend:
+    build:
+      context: ./backend
+      args: { INSTALL_RAG: "${INSTALL_RAG:-1}" }
+    env_file: [.env]
+    environment:
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      DB_PATH: /app/var/uds.db
+      CHROMA_DIR: /app/var/chroma
+    volumes: [appdata:/app/var]
+    depends_on: [ollama]
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports: ["${WEB_PORT:-8080}:80"]
+    depends_on: [backend]
+    restart: unless-stopped
+
+volumes:
+  ollama:
+  appdata:
